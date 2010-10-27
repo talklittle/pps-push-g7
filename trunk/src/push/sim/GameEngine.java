@@ -13,9 +13,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
-import push.g0.DumbPlayer0;
-import push.g0.DumbPlayer1;
 import push.sim.GameListener.GameUpdateType;
 import push.sim.Player.Direction;
 
@@ -30,6 +29,10 @@ public final class GameEngine {
 	private Logger log;
 	ArrayList<Direction> positions;
 	HashSet<Integer> losers;
+	
+	static {
+		PropertyConfigurator.configure("logger.properties");
+	}
 	
 	public GameEngine(String configFile) {
 		config = new GameConfig(configFile);
