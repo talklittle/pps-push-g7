@@ -56,7 +56,8 @@ public class PushyPushelkins extends Player{
 	public Point getPushPoint(Direction myCorner, Direction Enemy)
 	{
 		int depth = 0;
-		
+		System.out.println(myCorner);
+		System.out.println(Enemy);
 		while(depth<StaticVariable.MAX_DEPTH)
 		{
 			for (int x = 0; x < StaticVariable.MAX_X; x++)
@@ -64,13 +65,11 @@ public class PushyPushelkins extends Player{
 				{
 					Point point= new Point(x,y); 
 					if(getDepth(point, Enemy) == depth && board[x][y] != 0 && GameEngine.isInBounds(x, y))
-					{
+					{	System.out.println(depth + point.toString());
 						return point;
-					}else
-					{
-						depth++;
 					}
 				}
+			depth ++;
 		}
 		return new Point(8,4);
 	}
