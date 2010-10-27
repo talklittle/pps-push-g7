@@ -1,9 +1,7 @@
 package push.g7;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
+import java.awt.Point;
+import java.util.*;
 import push.sim.GameConfig;
 import push.sim.GameEngine;
 import push.sim.Move;
@@ -12,7 +10,7 @@ import push.sim.Player;
 
 public class PushyPushelkins extends Player{
 	int[][] board;
-	Direction ally;
+	
 	
 	private static final Random random = new Random();
 	
@@ -35,50 +33,56 @@ public class PushyPushelkins extends Player{
 		this.id=id;
 	}
 	
-	public int pickInitialAlly() {
-		// TODO
-		return 0;
-	}
+	
 
 	@Override
 	public Move makeMove(List<MoveResult> previousMoves) {
-		return generateRandomMove(0);
+		return generateSimpleMove();
 	}
-	public Move generateRandomMove(int depth)
+	public int getDepth(Point point, Direction playerHome)
 	{
-		if(depth > 300)
+		int a =((point.x-playerHome.getHome().x)+(point.y-playerHome.getHome().y));
+		int depth;
+		if(a%2 == 0)
 		{
-			return new Move(0,0,Direction.NE);
+			depth = a / 2;
+		}else {
+			depth = StaticVariable.MAX_DEPTH+1;
+	
 		}
-		int n2 = GameConfig.random.nextInt(9);
-		int length = n2;
-		if(length > 4)
-			length=8-length;
-		int offset = 4-length;
-		length+=5;
-		int n1 = GameConfig.random.nextInt(length);
-		n1*=2;
-		n1 += offset;
-		if(!GameEngine.isInBounds(n1, n2))
-			return generateRandomMove(depth+1);
+		return depth;
+	}
+	
+	public Point getPushPoint(Direction myCorner, Direction Enemy)
+	{
+		int depth = 0;
 		
-		if(board != null&& board[n2][n1] == 0)
-			return generateRandomMove(depth+1);
-		Direction d = myCorner.getRelative(GameConfig.random.nextInt(3)-1);
-		int tries = 0;
-		while(!GameEngine.isValidDirectionForCellAndHome(d, myCorner) && tries < 10)
+		while(depth<StaticVariable.MAX_DEPTH)
 		{
-			d = myCorner.getRelative(GameConfig.random.nextInt(2)-1);
-			
-			tries++;
+			for (int x = 0; x < StaticVariable.MAX_X; x++)
+					for(int y = 0; y < StaticVariable.MAX_Y; y++)
+				{
+					Point point= new Point(x,y); 
+					if(getDepth(point, Enemy) == depth && board[x][y] != 0 && GameEngine.isInBounds(x, y))
+					{
+						return point;
+					}else
+					{
+						depth++;
+					}
+				}
 		}
-		if(!GameEngine.isValidDirectionForCellAndHome(d, myCorner))
-			return generateRandomMove(depth+1);
-		
-		if(!GameEngine.isInBounds(n1+d.getDx(), n2+d.getDy()))
-			return generateRandomMove(depth+1);
-		
-		Move m = new Move(n1, n2,d);
+		return new Point(8,4);
+	}
+	public Move generateSimpleMove()
+	{
+		RecognizeEnemyAndAlly a = new RecognizeEnemyAndAlly();
+		Direction enemy = a.getEnemy(myCorner).get(0);
+		Direction ally = a.getAlly(myCorner).get(0);
+		Point PushPoint=  getPushPoint(myCorner, enemy);
+		Move m = new Move(PushPoint.x, PushPoint.y, ally);
 		return m;
 	}
+
+	
 }
