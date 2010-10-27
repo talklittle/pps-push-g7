@@ -1,8 +1,12 @@
 package push.g7;
 
 import java.awt.Point;
-import java.util.*;
-import push.sim.GameConfig;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import org.apache.log4j.Logger;
+
 import push.sim.GameEngine;
 import push.sim.Move;
 import push.sim.MoveResult;
@@ -14,6 +18,7 @@ public class PushyPushelkins extends Player{
 	
 	
 	private static final Random random = new Random();
+	private static final Logger logger = Logger.getLogger(PushyPushelkins.class);
 	
 	@Override
 	public void updateBoardState(int[][] board) {
@@ -128,7 +133,7 @@ public class PushyPushelkins extends Player{
 	
 	public int connected(Point point1, Point point2)
 	{
-		System.out.println((point1.y - point2.y)/(point1.x-point2.x));
+		logger.debug((point1.y - point2.y)/(point1.x-point2.x));
 		switch((point1.y - point2.y)/(point1.x-point2.x))
 		{
 		case 0: return 0;
