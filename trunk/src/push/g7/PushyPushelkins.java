@@ -3,21 +3,19 @@ package push.g7;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 
+import push.sim.GameConfig;
 import push.sim.GameEngine;
 import push.sim.Move;
 import push.sim.MoveResult;
 import push.sim.Player;
-import push.sim.Player.Direction;
 
 public class PushyPushelkins extends Player{
 	int[][] board;
 	
 	
-	private static final Random random = new Random();
 	private static final Logger logger = Logger.getLogger(PushyPushelkins.class);
 	
 	@Override
