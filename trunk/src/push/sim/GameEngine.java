@@ -60,7 +60,7 @@ public final class GameEngine {
 	}
 
 	ArrayList<MoveResult> lastRound = new ArrayList<MoveResult>();
-	private static int getDistance(Point from, Point to)
+	public static int getDistance(Point from, Point to)
 	{
 		int dx = from.x - to.x;
 		int dy = from.y - to.y;
