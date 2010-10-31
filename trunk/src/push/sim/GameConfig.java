@@ -87,6 +87,7 @@ public class GameConfig {
 			String[] names = s.split(" ");
 			for (int i = 0; i < names.length; i++) {
 				try {
+					if(names[i] != "")
 					availablePlayers.add((Class<Player>) Class
 							.forName(names[i]));
 				} catch (ClassNotFoundException e) {
@@ -94,7 +95,7 @@ public class GameConfig {
 				}
 			}
 		}
-		File sourceFolder = new File("bin/push/");
+		File sourceFolder = new File("bin"+System.getProperty("file.separator")+"push"+System.getProperty("file.separator"));
 		for(File f : sourceFolder.listFiles())
 		{
 
@@ -103,8 +104,7 @@ public class GameConfig {
 				for(File c : f.listFiles())
 				{
 					if(c.getName().endsWith(".class") ){
-						String className = c.toString().replaceAll("/", ".").replace("bin.","");
-						className = className.substring(0, className.length() - 6);
+						String className = c.toString().replace(System.getProperty("file.separator"),".").replace("bin.","");						className = className.substring(0, className.length() - 6);
 						 Class theClass = null;
 				          try{
 				            theClass = Class.forName(className, false,this.getClass().getClassLoader());

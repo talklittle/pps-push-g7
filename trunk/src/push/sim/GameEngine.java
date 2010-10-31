@@ -7,6 +7,9 @@
 package push.sim;
 
 import java.awt.Point;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +18,8 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import push.g0.DumbPlayer0;
+import push.g0.DumbPlayer1;
 import push.sim.GameListener.GameUpdateType;
 import push.sim.Player.Direction;
 
@@ -29,11 +34,25 @@ public final class GameEngine {
 	private Logger log;
 	ArrayList<Direction> positions;
 	HashSet<Integer> losers;
-	
 	static {
 		PropertyConfigurator.configure("logger.properties");
+		System.setOut(new PrintStream(new OutputStream() {
+			
+			@Override
+			public void write(int b) throws IOException {
+				// TODO Auto-generated method stub
+				
+			}
+		}));
+		System.setErr(new PrintStream(new OutputStream() {
+			
+			@Override
+			public void write(int b) throws IOException {
+				// TODO Auto-generated method stub
+				
+			}
+		}));
 	}
-	
 	public GameEngine(String configFile) {
 		config = new GameConfig(configFile);
 		gameListeners = new ArrayList<GameListener>();
@@ -143,8 +162,17 @@ public final class GameEngine {
 		board.saveBoard();
 		ArrayList<MoveResult> thisRound = new ArrayList<MoveResult>();
 		for (int i = 0; i < players.size(); i++) {
-			players.get(i).updateBoardState(board.board);
-			Move thisMove = players.get(i).makeMove(lastRound);
+			Move thisMove = null;
+			try
+			{
+				players.get(i).updateBoardState(board.board);
+				thisMove = players.get(i).makeMove(lastRound);
+			}
+			catch(Exception e)
+			{
+				log.error(e.toString() + " at player " + i + " (" + players.get(i) + ")");
+				thisMove=new Move(0, 0, Direction.E);
+			}
 			MoveResult r = new MoveResult(thisMove, i);
 			if (isValidMove(r)) {
 				r.setSuccess(true);
@@ -172,7 +200,7 @@ public final class GameEngine {
 														+ j)))
 						) {
 							losers.add(i);
-
+							log.error("Player " + i + " ("+playerAtDirection(positions.get(i)) + " made an invalid move");
 						}
 					}
 				}
@@ -396,7 +424,7 @@ public final class GameEngine {
 			directionToID.put(positions.get(i), i);
 		}
 		for (int i = 0; i < players.size(); i++) {
-			players.get(i).startNewGame(i, 4,
+			players.get(i).startNewGame(i, config.getMaxRounds(),
 					(ArrayList<Direction>) positions.clone());
 		}
 		round = 0;
