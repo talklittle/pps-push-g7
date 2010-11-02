@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import push.sim.GameConfig;
-import push.sim.GameEngine;
 import push.sim.Move;
 import push.sim.MoveResult;
 import push.sim.Player;
@@ -18,6 +16,7 @@ public class PushyPushelkins extends Player{
 	RecognizeEnemyAndAlly allyRecognizer;
 	int round;
 	int totalRounds;
+	ScoreZones scoreZones;
 	
 	// Number of rounds at the end to consider endgame
 	private static final int ENDGAME_ROUNDS = 10;
@@ -46,9 +45,10 @@ public class PushyPushelkins extends Player{
 		
 		this.round = 0;
 		this.totalRounds = m;
+		this.scoreZones = new ScoreZones(playerPositions);
 		
 		// From the beginning, everyone is your ally until demonstrated otherwise.
-		this.allyRecognizer = new RecognizeEnemyAndAlly(playerPositions, null);
+		this.allyRecognizer = new RecognizeEnemyAndAlly(myCorner, playerPositions, scoreZones, playerPositions, null);
 	}
 	
 	
@@ -58,7 +58,7 @@ public class PushyPushelkins extends Player{
 		// (first round is Round 1)
 		round++;
 		
-		updateAllies(previousMoves);
+		allyRecognizer.updateAlliances(previousMoves);
 //		return generateSimpleMove(0);
 		
 		// If it is not yet endgame
@@ -69,12 +69,6 @@ public class PushyPushelkins extends Player{
 		else {
 			return generateBetrayalMove();
 		}
-	}
-	
-	private void updateAllies(List<MoveResult> previousMoves) {
-		if (previousMoves == null || previousMoves.size() == 0)
-			return;
-		// TODO
 	}
 	
 	public int getDepth(Point point, Direction playerHome)
@@ -102,49 +96,49 @@ public class PushyPushelkins extends Player{
 		return null;
 	}
 	
-	public Move generateSimpleMove(int depth)
-	{
-		RecognizeEnemyAndAlly a = new RecognizeEnemyAndAlly();
-		Direction enemy = a.getEnemy(myCorner).get(0);
-		Direction ally = a.getAlly(myCorner).get(0);
-		if(depth > 300)
-		{
-			return new Move(0,0,Direction.NE);
-		}
-		int n2 = GameConfig.random.nextInt(9);
-		int length = n2;
-		if(length > 4)
-			length=8-length;
-		int offset = 4-length;
-		length+=5;
-		int n1 = GameConfig.random.nextInt(length);
-		n1*=2;
-		n1 += offset;
-		if(!GameEngine.isInBounds(n1, n2))
-			return generateSimpleMove(depth+1);
-		
-		if(getDistance(new Point(n1,n2), myCorner.getHome())<=2)
-			return generateSimpleMove(depth+1);
-		
-		if(board != null&& board[n2][n1] == 0)
-			return generateSimpleMove(depth+1);
-		Direction d = ally;
-//		int tries = 0;
-//		while(!GameEngine.isValidDirectionForCellAndHome(d, myCorner) && tries < 10)
+//	public Move generateSimpleMove(int depth)
+//	{
+//		RecognizeEnemyAndAlly a = new RecognizeEnemyAndAlly(myCorner, scoreZones);
+//		Direction enemy = a.getEnemy(myCorner).get(0);
+//		Direction ally = a.getAlly(myCorner).get(0);
+//		if(depth > 300)
 //		{
-//			d = myCorner.getRelative(-1);
-//			
-//			tries++;
+//			return new Move(0,0,Direction.NE);
 //		}
-		if(!GameEngine.isValidDirectionForCellAndHome(d, myCorner))
-			return generateSimpleMove(depth+1);
-		
-		if(!GameEngine.isInBounds(n1+d.getDx(), n2+d.getDy()))
-			return generateSimpleMove(depth+1);
-		
-		Move m = new Move(n1, n2,d);
-		return m;
-	}
+//		int n2 = GameConfig.random.nextInt(9);
+//		int length = n2;
+//		if(length > 4)
+//			length=8-length;
+//		int offset = 4-length;
+//		length+=5;
+//		int n1 = GameConfig.random.nextInt(length);
+//		n1*=2;
+//		n1 += offset;
+//		if(!GameEngine.isInBounds(n1, n2))
+//			return generateSimpleMove(depth+1);
+//		
+//		if(getDistance(new Point(n1,n2), myCorner.getHome())<=2)
+//			return generateSimpleMove(depth+1);
+//		
+//		if(board != null&& board[n2][n1] == 0)
+//			return generateSimpleMove(depth+1);
+//		Direction d = ally;
+////		int tries = 0;
+////		while(!GameEngine.isValidDirectionForCellAndHome(d, myCorner) && tries < 10)
+////		{
+////			d = myCorner.getRelative(-1);
+////			
+////			tries++;
+////		}
+//		if(!GameEngine.isValidDirectionForCellAndHome(d, myCorner))
+//			return generateSimpleMove(depth+1);
+//		
+//		if(!GameEngine.isInBounds(n1+d.getDx(), n2+d.getDy()))
+//			return generateSimpleMove(depth+1);
+//		
+//		Move m = new Move(n1, n2,d);
+//		return m;
+//	}
 //	public Point getPushPoint(Direction myCorner, Direction enemy, Direction ally)//delete ally one day;
 //	{
 //		int depth = 0;
