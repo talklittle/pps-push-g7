@@ -2,7 +2,6 @@ package push.g7;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -15,9 +14,10 @@ import push.sim.Player;
 
 public class PushyPushelkins extends Player{
 	int[][] board;
-	// TODO determine actual allies, help them more often
-	HashSet<Direction> allies = new HashSet<Direction>();
 	ArrayList<Direction> playerPositions;
+	RecognizeEnemyAndAlly allyRecognizer;
+	int round;
+	int totalRounds;
 	
 	// Number of rounds at the end to consider endgame
 	private static final int ENDGAME_ROUNDS = 10;
@@ -39,24 +39,41 @@ public class PushyPushelkins extends Player{
 	@Override
 	public void startNewGame(int id, int m,
 			ArrayList<Direction> playerPositions) {
-		myCorner=playerPositions.get(id);
 		
+		this.myCorner=playerPositions.get(id);
 		this.id=id;
 		this.playerPositions = playerPositions;
 		
+		this.round = 0;
+		this.totalRounds = m;
+		
 		// From the beginning, everyone is your ally until demonstrated otherwise.
-		allies.addAll(playerPositions);
+		this.allyRecognizer = new RecognizeEnemyAndAlly(playerPositions, null);
 	}
 	
 	
 
 	@Override
 	public Move makeMove(List<MoveResult> previousMoves) {
+		// (first round is Round 1)
+		round++;
+		
 		updateAllies(previousMoves);
-		return generateSimpleMove(0);
+//		return generateSimpleMove(0);
+		
+		// If it is not yet endgame
+		if (round <= totalRounds - ENDGAME_ROUNDS) {
+			return generateHelpfulMove();
+		}
+		// If it is endgame
+		else {
+			return generateBetrayalMove();
+		}
 	}
 	
 	private void updateAllies(List<MoveResult> previousMoves) {
+		if (previousMoves == null || previousMoves.size() == 0)
+			return;
 		// TODO
 	}
 	
@@ -72,6 +89,17 @@ public class PushyPushelkins extends Player{
 	
 		}
 		return depth;
+	}
+	
+	
+	private Move generateHelpfulMove() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	private Move generateBetrayalMove() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	public Move generateSimpleMove(int depth)
