@@ -10,6 +10,17 @@ public class RecognizeEnemyAndAlly {
 	ArrayList<Direction> ally = new ArrayList<Direction>();
 	ArrayList<Direction> enemy = new ArrayList<Direction>();
 	
+	public RecognizeEnemyAndAlly() {
+		this(null, null);
+	}
+	
+	public RecognizeEnemyAndAlly(Collection initialAllies, Collection initialEnemies) {
+		if (initialAllies != null)
+			ally.addAll(initialAllies);
+		if (initialEnemies != null)
+			enemy.addAll(initialEnemies);
+	}
+	
 	public ArrayList<Direction> getAlly(Direction myCorner) {
 		setAlly(myCorner);
 		return ally;
