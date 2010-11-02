@@ -2,6 +2,7 @@ package push.g7;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -14,6 +15,12 @@ import push.sim.Player;
 
 public class PushyPushelkins extends Player{
 	int[][] board;
+	// TODO determine actual allies, help them more often
+	HashSet<Direction> allies = new HashSet<Direction>();
+	ArrayList<Direction> playerPositions;
+	
+	// Number of rounds at the end to consider endgame
+	private static final int ENDGAME_ROUNDS = 10;
 	
 	
 	private static final Logger logger = Logger.getLogger(PushyPushelkins.class);
@@ -35,14 +42,24 @@ public class PushyPushelkins extends Player{
 		myCorner=playerPositions.get(id);
 		
 		this.id=id;
+		this.playerPositions = playerPositions;
+		
+		// From the beginning, everyone is your ally until demonstrated otherwise.
+		allies.addAll(playerPositions);
 	}
 	
 	
 
 	@Override
 	public Move makeMove(List<MoveResult> previousMoves) {
+		updateAllies(previousMoves);
 		return generateSimpleMove(0);
 	}
+	
+	private void updateAllies(List<MoveResult> previousMoves) {
+		// TODO
+	}
+	
 	public int getDepth(Point point, Direction playerHome)
 	{
 		int a =((point.x-playerHome.getHome().x)+(point.y-playerHome.getHome().y));
