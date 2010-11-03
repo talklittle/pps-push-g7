@@ -18,10 +18,12 @@ public class PointProperty {
 	{
 		this.x =x;
 		this.y = y;
-		setCoins(a);
 		setStatus();
+		if(this.status == 1)
+		{
+		setCoins(a);
 		setIdAndScore(a);
-
+		}
 	}
 	private void setCoins(int[][] board)
 	{
