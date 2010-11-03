@@ -17,6 +17,7 @@ public class PushyPushelkins extends Player{
 	int round;
 	int totalRounds;
 	ScoreZones scoreZones;
+	SimpleMoveStrategy strategy = new SimpleMoveStrategy();
 	
 	
 	private static final Logger logger = Logger.getLogger(PushyPushelkins.class);	
@@ -44,9 +45,9 @@ public class PushyPushelkins extends Player{
 		this.scoreZones = new ScoreZones(playerPositions);
 		
 		// From the beginning, everyone is your ally until demonstrated otherwise.
-		this.allyRecognizer = new RecognizeEnemyAndAlly(myCorner, playerPositions, 
-
-scoreZones, playerPositions, null);
+//		this.allyRecognizer = new RecognizeEnemyAndAlly(myCorner, playerPositions, 
+//
+//scoreZones, playerPositions, null);
 	}
 	
 	
@@ -61,39 +62,19 @@ scoreZones, playerPositions, null);
 		// If it is not yet endgame
 		if (round <= StaticVariable.FirstStageRound)
 		{
-			return generateInitialMove(board, id, myCorner, round, 0);
+			return strategy.generateInitialMove(board, myCorner, round);
 		}
 		else if (round <= totalRounds - StaticVariable.LastStageRound) {
-			return generateHelpfulMove(board, id, myCorner, round, 0);
+			return strategy.generateHelpfulMove(board, myCorner, round);
 		}
 		// If it is endgame
 		else {
-			return generateBetrayalMove(board, id,myCorner, round, 0);
+			return strategy.generateBetrayalMove(board,myCorner, round);
 		}
 	}
 	
 
-	
-	private Move generateInitialMove(int[][]board, int id, Direction myCorner, int 
 
-round, int depth){
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	private Move generateHelpfulMove(int[][]board, int id, Direction myCorner, int 
-
-round, int depth) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	private Move generateBetrayalMove(int[][]board, int id, Direction myCorner, int 
-
-round, int depth) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
 
 
