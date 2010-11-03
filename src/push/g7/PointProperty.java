@@ -10,10 +10,11 @@ public class PointProperty {
 	int y;	
 	int coins;
 	int status;
-	Direction dir;
+	Direction home;
+
 	int score;
 	
-	void PointProperty(int x, int y,int[][] a)
+	PointProperty(int x, int y,int[][] a)
 	{
 		this.x =x;
 		this.y = y;
@@ -55,7 +56,7 @@ public class PointProperty {
 			}
 		}
 			score= (closestn2 - closestn);
-			dir = closest;
+			home = closest;
 		
 		
 	}
@@ -77,7 +78,7 @@ public class PointProperty {
 	
 	public Direction getDirection()
 	{
-		return	dir;
+		return	home;
 	}
 	
 }

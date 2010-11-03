@@ -8,7 +8,7 @@ public class StaticVariable {
 	public static final int MAX_DEPTH= 8;
 
 	public static final int FirstStageRound = 10;
-	public static final int LastStageRound = 10;
+	public static final int LastStageRound = 4;
 	// Number of rounds at the end to consider endgame
 	
 
