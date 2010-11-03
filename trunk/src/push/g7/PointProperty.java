@@ -42,7 +42,7 @@ public class PointProperty {
 		Direction closest2 = null;
 		int closestn = 8;
 		int closestn2 = 8;
-		Point conv = new Point(y, x);
+		Point conv = new Point(x, y);
 		for (Direction d : Direction.values()) {
 			int s = GameEngine.getDistance(d.getHome(),conv);
 			if(s == 100)
