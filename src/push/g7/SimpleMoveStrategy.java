@@ -32,8 +32,8 @@ public class SimpleMoveStrategy {
 	}
 
 	public Move generateBetrayalMove(int[][]board, Direction myCorner,int round) {
-		
-		return null;
+		// FIXME find a betrayal move, i.e., large stacks that we can move to white spots
+		return generateHelpfulMove(board, myCorner, round);
 	}
 	
 	public Move generalMove(int[][]board, Direction from, Direction to)
@@ -76,7 +76,8 @@ public class SimpleMoveStrategy {
 
 			}
 		
-		return null;
+		// No moves; return a dummy Move
+		return new Move(0, 0, Direction.E);
 
 	}
 
