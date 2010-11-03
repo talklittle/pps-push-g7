@@ -12,9 +12,9 @@ public class ScoreZones {
 	private int[][] board;
 	private ArrayList<Direction> positions;
 	// Direction val to list of Points in that Direction's score zone
-	private HashMap< Integer, ArrayList<Point> > valToScoreZones;
+	private HashMap< Integer, ArrayList<Point> > valToScoreZones = new HashMap< Integer, ArrayList<Point> >();
 	// Store the score multiplier for each Point
-	private HashMap<Point, Integer> pointToMultiplier;
+	private HashMap<Point, Integer> pointToMultiplier = new HashMap<Point, Integer>();
 	
 	public ScoreZones(ArrayList<Direction> positions) {
 		
@@ -53,7 +53,12 @@ public class ScoreZones {
 					// Keep track of the score multiplier
 					pointToMultiplier.put(conv, closestn2 - closestn);
 					// Append to score zones list for the owner
-					valToScoreZones.get(closest.getVal()).add(conv);
+					ArrayList<Point> scoreZonesList = valToScoreZones.get(closest.getVal());
+					if (scoreZonesList == null) {
+						scoreZonesList = new ArrayList<Point>();
+						valToScoreZones.put(closest.getVal(), scoreZonesList);
+					}
+					scoreZonesList.add(conv);
 				} else {
 					pointToMultiplier.put(conv, 0);
 				}

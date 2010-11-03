@@ -45,9 +45,7 @@ public class PushyPushelkins extends Player{
 		this.scoreZones = new ScoreZones(playerPositions);
 		
 		// From the beginning, everyone is your ally until demonstrated otherwise.
-//		this.allyRecognizer = new RecognizeEnemyAndAlly(myCorner, playerPositions, 
-//
-//scoreZones, playerPositions, null);
+		this.allyRecognizer = new RecognizeEnemyAndAlly(myCorner, playerPositions, scoreZones, playerPositions, null);
 	}
 	
 	
