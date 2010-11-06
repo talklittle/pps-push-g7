@@ -156,6 +156,7 @@ public final class GameEngine {
 						.getMaxRounds())) {
 			// GAME OVER!
 			notifyListeners(GameUpdateType.GAMEOVER);
+			lastRound = new ArrayList<MoveResult>();
 			return false;
 		}
 
