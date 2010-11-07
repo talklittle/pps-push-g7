@@ -14,6 +14,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -27,6 +28,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -77,7 +81,7 @@ public final class BoardPanel extends JPanel {
 			AffineTransform rot = (AffineTransform) af.clone();
 			FontMetrics fm = this.getFontMetrics(g2D.getFont());
 			Rectangle2D bounds = fm.getStringBounds("0: "
-					+ engine.playerAtDirection(Direction.NW).getName(), g2D);
+					+ engine.playerAtDirection(Direction.NW).getNameWithTeam(), g2D);
 			rot.rotate(Math.toRadians(-30), BOARD_X + PIECE_SIZE * 2, BOARD_Y);
 			g2D.setTransform(rot);
 			g2D.setColor(playerColors[0]);
@@ -88,14 +92,14 @@ public final class BoardPanel extends JPanel {
 					(int) bounds.getWidth(), (int) bounds.getHeight());
 			g2D.setColor(Color.black);
 			g2D.drawString("0: "
-					+ engine.playerAtDirection(Direction.NW).getName(),
+					+ engine.playerAtDirection(Direction.NW).getNameWithTeam(),
 					(int) (BOARD_X + PIECE_SIZE * 2 - bounds.getWidth() / 2),
 					(int) (BOARD_Y));
 			g2D.setTransform(af);
 
 			rot = (AffineTransform) af.clone();
 			bounds = fm.getStringBounds(
-					"1: " + engine.playerAtDirection(Direction.NE).getName(),
+					"1: " + engine.playerAtDirection(Direction.NE).getNameWithTeam(),
 					g2D);
 			rot.rotate(Math.toRadians(30), BOARD_X + PIECE_SIZE * 7, BOARD_Y);
 			g2D.setTransform(rot);
@@ -107,14 +111,14 @@ public final class BoardPanel extends JPanel {
 					(int) bounds.getWidth(), (int) bounds.getHeight());
 			g2D.setColor(Color.black);
 			g2D.drawString("1: "
-					+ engine.playerAtDirection(Direction.NE).getName(),
+					+ engine.playerAtDirection(Direction.NE).getNameWithTeam(),
 					(int) (BOARD_X + PIECE_SIZE * 7 - bounds.getWidth() / 2),
 					(int) (BOARD_Y));
 			g2D.setTransform(af);
 
 			rot = (AffineTransform) af.clone();
 			bounds = fm.getStringBounds(
-					"2: " + engine.playerAtDirection(Direction.E).getName(),
+					"2: " + engine.playerAtDirection(Direction.E).getNameWithTeam(),
 					g2D);
 			rot.rotate(Math.toRadians(90), BOARD_X + PIECE_SIZE * 9, BOARD_Y
 					+ PIECE_SIZE * 9 / 2);
@@ -127,14 +131,14 @@ public final class BoardPanel extends JPanel {
 					(int) bounds.getHeight());
 			g2D.setColor(Color.black);
 			g2D.drawString("2: "
-					+ engine.playerAtDirection(Direction.E).getName(),
+					+ engine.playerAtDirection(Direction.E).getNameWithTeam(),
 					(int) (BOARD_X + PIECE_SIZE * 9 - bounds.getWidth() / 2),
 					(int) (BOARD_Y + PIECE_SIZE * 9 / 2) - 10);
 			g2D.setTransform(af);
 
 			rot = (AffineTransform) af.clone();
 			bounds = fm.getStringBounds(
-					"3: " + engine.playerAtDirection(Direction.SE).getName(),
+					"3: " + engine.playerAtDirection(Direction.SE).getNameWithTeam(),
 					g2D);
 			rot.rotate(Math.toRadians(140), BOARD_X + PIECE_SIZE * 7, BOARD_Y
 					+ PIECE_SIZE * 9);
@@ -147,14 +151,14 @@ public final class BoardPanel extends JPanel {
 					(int) bounds.getWidth(), (int) bounds.getHeight());
 			g2D.setColor(Color.black);
 			g2D.drawString("3: "
-					+ engine.playerAtDirection(Direction.SE).getName(),
+					+ engine.playerAtDirection(Direction.SE).getNameWithTeam(),
 					(int) (BOARD_X + PIECE_SIZE * 7 - bounds.getWidth() / 2),
 					(int) (BOARD_Y + PIECE_SIZE * 9));
 			g2D.setTransform(af);
 
 			rot = (AffineTransform) af.clone();
 			bounds = fm.getStringBounds(
-					"4: " + engine.playerAtDirection(Direction.SW).getName(),
+					"4: " + engine.playerAtDirection(Direction.SW).getNameWithTeam(),
 					g2D);
 			rot.rotate(Math.toRadians(210), BOARD_X + PIECE_SIZE * 2, BOARD_Y
 					+ PIECE_SIZE * 9);
@@ -167,14 +171,14 @@ public final class BoardPanel extends JPanel {
 					(int) bounds.getWidth(), (int) bounds.getHeight());
 			g2D.setColor(Color.black);
 			g2D.drawString("4: "
-					+ engine.playerAtDirection(Direction.SW).getName(),
+					+ engine.playerAtDirection(Direction.SW).getNameWithTeam(),
 					(int) (BOARD_X + PIECE_SIZE * 2 - bounds.getWidth() / 2),
 					(int) (BOARD_Y + PIECE_SIZE * 9));
 			g2D.setTransform(af);
 
 			rot = (AffineTransform) af.clone();
 			bounds = fm.getStringBounds(
-					"5: " + engine.playerAtDirection(Direction.W).getName(),
+					"5: " + engine.playerAtDirection(Direction.W).getNameWithTeam(),
 					g2D);
 			rot.rotate(Math.toRadians(-90), BOARD_X, BOARD_Y + PIECE_SIZE * 9
 					/ 2);
@@ -186,7 +190,7 @@ public final class BoardPanel extends JPanel {
 					(int) bounds.getWidth(), (int) bounds.getHeight());
 			g2D.setColor(Color.black);
 			g2D.drawString("5: "
-					+ engine.playerAtDirection(Direction.W).getName(),
+					+ engine.playerAtDirection(Direction.W).getNameWithTeam(),
 					(int) (BOARD_X - bounds.getWidth() / 2),
 					(int) (BOARD_Y + PIECE_SIZE * 9 / 2) - 10);
 			g2D.setTransform(af);
@@ -222,7 +226,17 @@ public final class BoardPanel extends JPanel {
 					}
 				}
 			}
+			HashMap<Move, Integer> counts = new HashMap<Move, Integer>();
 			for (MoveResult m : engine.lastRound) {
+				if(counts.containsKey(m.getMove()))
+				{
+					counts.put(m.getMove(), counts.get(m.getMove()) + 1);
+				}
+				else
+				{
+					counts.put(m.getMove(), 1);
+				}
+				
 				if (m.isSuccess()) {
 					g2D.setStroke(new BasicStroke(4));
 				} else {
@@ -246,6 +260,14 @@ public final class BoardPanel extends JPanel {
 						- 8, BOARD_Y + PIECE_SIZE * m.getMove().getNewY()
 						+ PIECE_SIZE / 2 - 8, 16, 16);
 				g2D.fill(s);
+			}
+			for(Move m : counts.keySet())
+			{
+				g2D.setColor(Color.black);
+				if(counts.get(m) > 1)
+					g2D.drawString("(x"+counts.get(m)+")",(m.getX() ) * PIECE_SIZE / 2 + PIECE_SIZE
+						/ 2 + BOARD_X, ( m.getY() )* PIECE_SIZE
+						+ BOARD_Y + PIECE_SIZE / 3);
 			}
 			g2D.setStroke(new BasicStroke(1));
 			if (board != null) {

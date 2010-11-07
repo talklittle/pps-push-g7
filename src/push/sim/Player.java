@@ -96,6 +96,11 @@ public abstract class Player {
      */
     public abstract String getName();
     
+    public String getNameWithTeam()
+    {
+    	String r = this.getClass().getName().replace("push.", "");
+    	return r.substring(0, r.indexOf(".")) + " - " + getName();
+    }
     /**
      * Called on the player when it is instantiated
      */
