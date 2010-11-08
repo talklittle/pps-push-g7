@@ -2,6 +2,7 @@ package push.g7;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -67,7 +68,41 @@ public class SimpleMoveStrategy {
 		// Next are highest scoring players who ARE our allies.
 		// Finally, any invalid players (have 0 score anyway).
 		List<Integer> scores = recognize.scores.getScores();
+		ArrayList<Integer> scoresCopy = new ArrayList<Integer>(scores);
+		Collections.sort(scoresCopy);
+		Collections.reverse(scoresCopy);
+		List<Direction> allies = recognize.getAlliesStrongestToWeakest();
 		
+		ArrayList<Integer> harmNotAllies = new ArrayList<Integer>();
+		ArrayList<Integer> harmYesAllies = new ArrayList<Integer>();
+		ArrayList<Integer> harmInvalid = new ArrayList<Integer>();
+		
+		for (int id = 0; id < recognize.validPlayers.length; id++) {
+			if (!recognize.validPlayers[id])
+				harmInvalid.add(id);
+		}
+		
+		// scores highest to lowest
+		for (int i = 0; i < scoresCopy.size(); i++) {
+			for (int id = 0; id < scores.size(); id++) {
+				if (scores.get(id) == scoresCopy.get(i)) {
+					if (!harmInvalid.contains(id)) {
+						if (allies.contains(recognize.playerPositions.get(id))) {
+							harmYesAllies.add(id);
+						} else {
+							harmNotAllies.add(id);
+						}
+					}
+				}
+			}
+		}
+		ArrayList<Integer> harmPriority = new ArrayList<Integer>();
+		harmPriority.addAll(harmNotAllies);
+		harmPriority.addAll(harmYesAllies);
+		harmPriority.addAll(harmInvalid);
+		
+		// FIXME supply a list of "to" Directions
+		return generalMove(board, myCorner, recognize.playerPositions.get(harmPriority.get(0)));
 	}
 	
 	public Move generalMove(int[][]board, Direction from, Direction to)
