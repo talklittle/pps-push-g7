@@ -1,8 +1,12 @@
 package push.g7;
 
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+
 import org.apache.log4j.Logger;
+
 import push.sim.Move;
 import push.sim.Player.Direction;
 
@@ -34,18 +38,35 @@ public class SimpleMoveStrategy {
 	{
 		logger.info("helpful move. round: "+ round+"\n");
 		// Pick the ally to help
-//		ally = myCorner.getOpposite();
+		Direction allyToHelp;
 		
-		for (Direction direction : )
-		recognize.isAlly(direction)
+		ArrayList<Direction> alliesStrongToWeak = recognize.getAlliesStrongestToWeakest();
+		if (!alliesStrongToWeak.isEmpty()) {
+			// help the strongest ally
+			allyToHelp = alliesStrongToWeak.get(0);
+		} else {
+			// no allies so use weakest enemy
+			ArrayList<Direction> enemiesStrongToWeak = recognize.getEnemiesStrongestToWeakest();
+			if (!enemiesStrongToWeak.isEmpty()) {
+				allyToHelp = enemiesStrongToWeak.get(enemiesStrongToWeak.size()-1);
+			} else {
+				// no enemies either, so help the opposite
+				allyToHelp = myCorner.getOpposite();
+			}
+		}
 		
-		
-		return generalMove(board, myCorner, ally);
+		return generalMove(board, myCorner, allyToHelp);
 	}
 
 	public Move generateBetrayalMove(int[][]board, Direction myCorner,int round, RecognizeEnemyAndAlly recognize) {
 		// find a betrayal move, i.e., large stacks that we can move to white spots
 		logger.info("betrayal move. round: "+ round+"\n");
+		
+		// See who we want to hurt most.
+		// First are highest scoring players who are NOT our allies.
+		// Next are highest scoring players who ARE our allies.
+		// Finally, any invalid players (have 0 score anyway).
+		List<Integer> scores = recognize.scores.getScores();
 		
 	}
 	

@@ -60,6 +60,10 @@ public class RecognizeEnemyAndAlly {
 		scores.updateScores(initialBoard, playerPositions, directionToID);
 	}
 	
+	public void updateScores(int[][] board, List<Direction> playerPositions, Map<Direction, Integer> directionToID) {
+		scores.updateScores(board, playerPositions, directionToID);
+	}
+	
 	public void updateAlliances(List<MoveResult> previousMoves) {
 		if (previousMoves == null || previousMoves.size() == 0)
 			return;
@@ -180,6 +184,10 @@ public class RecognizeEnemyAndAlly {
 		for (Integer id : illegalPlayerIds) {
 			validPlayers[id] = false;
 		}
+	}
+	
+	public boolean[] getValidPlayers() {
+		return validPlayers;
 	}
 	
 }
