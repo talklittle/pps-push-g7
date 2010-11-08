@@ -107,9 +107,13 @@ public class SimpleMoveStrategy {
 		harmPriority.addAll(harmNotAllies);
 		harmPriority.addAll(harmYesAllies);
 		harmPriority.addAll(harmInvalid);
+		ArrayList<Direction> harmPriorityDirections = new ArrayList<Direction>();
+		for (Integer harmPrio : harmPriority) {
+			harmPriorityDirections.add(recognize.playerPositions.get(harmPrio));
+		}
 		
-		// FIXME supply a list of "to" Directions
-		return generalMove(board, myCorner, recognize.playerPositions.get(harmPriority.get(0)));
+		// supply a list of "to" Directions
+		return generalMove(board, myCorner, harmPriorityDirections);
 	}
 	
 	public Move generalMove(int[][]board, Direction myCorner, ArrayList<Direction> allys)
