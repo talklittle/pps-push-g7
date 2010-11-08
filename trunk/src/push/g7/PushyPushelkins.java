@@ -11,7 +11,8 @@ import push.sim.MoveResult;
 import push.sim.Player;
 
 public class PushyPushelkins extends Player{
-	int[][] board, previousBoard;
+	int[][] board = new int[StaticVariable.MAX_Y][StaticVariable.MAX_X];
+	int[][] previousBoard;
 
 	ArrayList<Direction> playerPositions;
 	HashMap<Direction, Integer> directionToID = new HashMap<Direction, Integer>();
@@ -49,6 +50,12 @@ public class PushyPushelkins extends Player{
 		this.totalRounds = m;
 		this.scoreZones = new ScoreZones(playerPositions);
 		this.illegalMoveChecker = new IllegalMoveChecker(playerPositions);
+		for(int y=0;y<StaticVariable.MAX_Y;y++)
+			for(int x=0; x<StaticVariable.MAX_X;x++)
+			{
+				this.board[y][x]=1;
+			}
+		this.previousBoard=this.board;
 		
 		for (int i = 0; i < playerPositions.size(); i++) {
 			directionToID.put(playerPositions.get(i), i);
