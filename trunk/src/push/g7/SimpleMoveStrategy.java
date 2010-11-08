@@ -3,7 +3,6 @@ package push.g7;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -49,22 +48,16 @@ public class SimpleMoveStrategy {
 		Direction allyToHelp;
 		
 		ArrayList<Direction> alliesStrongToWeak = recognize.getAlliesStrongestToWeakest();
-		if (!alliesStrongToWeak.isEmpty()) {
-			// help the strongest ally
-			allyToHelp = alliesStrongToWeak.get(0);
-		} else {
-			// no allies so use weakest enemy
-			ArrayList<Direction> enemiesStrongToWeak = recognize.getEnemiesStrongestToWeakest();
-			if (!enemiesStrongToWeak.isEmpty()) {
-				allyToHelp = enemiesStrongToWeak.get(enemiesStrongToWeak.size()-1);
-			} else {
-				// no enemies either, so help the opposite
-				allyToHelp = myCorner.getOpposite();
-			}
-			alliesStrongToWeak.add(allyToHelp);
-		}
+		ArrayList<Direction> neutralPlayers = recognize.getNeutralPlayers();
+		ArrayList<Direction> enemiesStrongToWeak = recognize.getEnemiesStrongestToWeakest();
 		
-		return generalMove(0, board, myCorner, alliesStrongToWeak);
+		ArrayList<Direction> priority = new ArrayList<Direction>();
+		priority.addAll(alliesStrongToWeak);
+		priority.addAll(neutralPlayers);
+		Collections.reverse(enemiesStrongToWeak);
+		priority.addAll(enemiesStrongToWeak);
+		
+		return generalMove(0, board, myCorner, priority);
 	}
 
 	public Move generateBetrayalMove(int[][]board, Direction myCorner,int round, RecognizeEnemyAndAlly recognize) {

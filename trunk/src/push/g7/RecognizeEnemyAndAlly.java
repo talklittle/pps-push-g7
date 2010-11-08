@@ -179,6 +179,28 @@ public class RecognizeEnemyAndAlly {
 		return sortedEnemies;
 	}
 	
+	public ArrayList<Direction> getNeutralPlayers() {
+		ArrayList<Direction> neutralPlayers = new ArrayList<Direction>();
+		for (int id = 0; id < strongAssistanceScore.length; id++) {
+			if (strongAssistanceScore[id] == 0) {
+				neutralPlayers.add(playerPositions.get(id));
+			}
+		}
+		// put the Opposite player first, Opposite's neighbors next, finally neighbors.
+		ArrayList<Direction> neutralPlayersSorted = new ArrayList<Direction>();
+		if (neutralPlayers.contains(myCorner.getRelative(0)))
+			neutralPlayersSorted.add(myCorner.getRelative(0));
+		if (neutralPlayers.contains(myCorner.getRelative(-1)))
+			neutralPlayersSorted.add(myCorner.getRelative(-1));
+		if (neutralPlayers.contains(myCorner.getRelative(1)))
+			neutralPlayersSorted.add(myCorner.getRelative(1));
+		if (neutralPlayers.contains(myCorner.getLeft()))
+			neutralPlayersSorted.add(myCorner.getLeft());
+		if (neutralPlayers.contains(myCorner.getRight()))
+			neutralPlayersSorted.add(myCorner.getRight());
+		return neutralPlayersSorted;
+	}
+	
 	
 	public void addIllegalPlayers(Collection<Integer> illegalPlayerIds) {
 		for (Integer id : illegalPlayerIds) {
