@@ -40,7 +40,7 @@ public class SimpleMoveStrategy {
 			}
 		}
 
-		return generalMove(board, myCorner, allys);
+		return generalMove(0, board, myCorner, allys);
 	}
 	public Move generateHelpfulMove(int[][]board, Direction myCorner,int round, RecognizeEnemyAndAlly recognize) 
 	{
@@ -61,9 +61,10 @@ public class SimpleMoveStrategy {
 				// no enemies either, so help the opposite
 				allyToHelp = myCorner.getOpposite();
 			}
+			alliesStrongToWeak.add(allyToHelp);
 		}
 		
-		return generalMove(board, myCorner, allyToHelp);
+		return generalMove(0, board, myCorner, alliesStrongToWeak);
 	}
 
 	public Move generateBetrayalMove(int[][]board, Direction myCorner,int round, RecognizeEnemyAndAlly recognize) {
@@ -113,21 +114,32 @@ public class SimpleMoveStrategy {
 		}
 		
 		// supply a list of "to" Directions
-		return generalMove(board, myCorner, harmPriorityDirections);
+		return generalMove(1,board, myCorner, harmPriorityDirections);
 	}
 	
-	public Move generalMove(int[][]board, Direction myCorner, ArrayList<Direction> allys)
+	public Move generalMove(int status,int[][]board, Direction myCorner, ArrayList<Direction> allysOrEnemy)
 	{	
 		logger.info("ally : " + allys.iterator());
-		
-		//try to help the first ally then the next. 
-		for(Direction i: allys)
+		//ally;
+		if(status ==0)
 		{
-			GetMostEfficientMove getMove = new GetMostEfficientMove(0, myCorner, i, board);
+		//try to help the first ally then the next. 
+		for(Direction i: allysOrEnemy)
+		{
+			GetMostEfficientMove getMove = new GetMostEfficientMove(status, myCorner, i, board);
 			if(getMove.NoValidHelpForThisAlly == 0) { return getMove.mostHelpfulMove;}
 		}
+		}
+		//enemy
+		else{
+			for(Direction i: allysOrEnemy)
+			{
+				GetMostEfficientMove getMove = new GetMostEfficientMove(status, myCorner, i, board);
+				if(getMove.NoValidHurtForThisEnemy == 0) { return getMove.hurtestMove;}
+			}
+		}
 		
-		//If all the allies is not valid for help,any valid move but not hurt myself.
+		//If all the allies is not valid for help or enemies to hurt,any valid move but not hurt myself.
 		for(int x=0; x<StaticVariable.MAX_X;x++)
 			for (int y=0; y<StaticVariable.MAX_Y; y++)
 				for (Direction d : Direction.values())
