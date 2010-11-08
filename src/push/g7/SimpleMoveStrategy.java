@@ -10,34 +10,42 @@ import push.sim.Player.Direction;
 public class SimpleMoveStrategy {
 
 	private static final Logger logger = Logger.getLogger(SimpleMoveStrategy.class);
-	Direction ally;
-	Direction Enemy;
-	HashSet<Direction> allys;
+	HashSet<Direction> allys = new HashSet<Direction>();
 
 
 	public Move generateInitialMove(int[][]board, Direction myCorner,int round)
 	{
 		logger.info("round: "+ round+"\n");
-		if (round <= StaticVariable.FirstStageRound-8) ally = myCorner.getOpposite();
-		else if (round>StaticVariable.FirstStageRound-8 && round <= StaticVariable.FirstStageRound-6) ally = myCorner.getRelative(-1);
-		else if (round>StaticVariable.FirstStageRound-6 && round <= StaticVariable.FirstStageRound-4) ally = myCorner.getRelative(1);
-		else if (round>StaticVariable.FirstStageRound-4 && round <= StaticVariable.FirstStageRound-2) ally = myCorner.getRight();
-		else if (round>StaticVariable.FirstStageRound-2 && round <= StaticVariable.FirstStageRound) ally = myCorner.getLeft();
+		Direction ally = myCorner.getOpposite();
+		if (round <= StaticVariable.FirstStageRound-8)
+			ally = myCorner.getOpposite();
+		else if (round>StaticVariable.FirstStageRound-8 && round <= StaticVariable.FirstStageRound-6)
+			ally = myCorner.getRelative(-1);
+		else if (round>StaticVariable.FirstStageRound-6 && round <= StaticVariable.FirstStageRound-4)
+			ally = myCorner.getRelative(1);
+		else if (round>StaticVariable.FirstStageRound-4 && round <= StaticVariable.FirstStageRound-2)
+			ally = myCorner.getRight();
+		else if (round>StaticVariable.FirstStageRound-2 && round <= StaticVariable.FirstStageRound)
+			ally = myCorner.getLeft();
 		return generalMove(board, myCorner, ally);
 	}
 
-	public Move generateHelpfulMove(int[][]board, Direction myCorner,int round) 
+	public Move generateHelpfulMove(int[][]board, Direction myCorner,int round, RecognizeEnemyAndAlly recognize) 
 	{
-		logger.info("round: "+ round+"\n");
-		ally = myCorner.getOpposite();
-		return generalMove(board, myCorner, ally);
+		logger.info("helpful move. round: "+ round+"\n");
+		// Pick the ally to help
+//		ally = myCorner.getOpposite();
 		
+		recognize.isAlly(direction)
+		
+		
+		return generalMove(board, myCorner, ally);
 	}
 
-	public Move generateBetrayalMove(int[][]board, Direction myCorner,int round) {
-		// FIXME find a betrayal move, i.e., large stacks that we can move to white spots
-		logger.info("round: "+ round+"\n");
-		return generateHelpfulMove(board, myCorner, round);
+	public Move generateBetrayalMove(int[][]board, Direction myCorner,int round, RecognizeEnemyAndAlly recognize) {
+		// find a betrayal move, i.e., large stacks that we can move to white spots
+		logger.info("betrayal move. round: "+ round+"\n");
+		
 	}
 	
 	public Move generalMove(int[][]board, Direction from, Direction to)

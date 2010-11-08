@@ -49,6 +49,12 @@ public class RecognizeEnemyAndAlly {
 		enemy.clear();
 		
 		for (MoveResult result : previousMoves) {
+			// Skip myself
+			if (myCorner.equals(playerPositions.get(result.getPlayerId()))) {
+				logger.debug("updateAlliances: skip myself id="+result.getPlayerId());
+				continue;
+			}
+			
 			int playerId = result.getPlayerId();
 			Move move = result.getMove();
 			Point oldPoint = new Point(move.getX(), move.getY());
