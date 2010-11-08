@@ -9,6 +9,7 @@ public class StaticVariable {
 
 	public static final int FirstStageRound = 10;
 	public static final int LastStageRound = 4;
+	public static final int TrySteps = 3;
 	// Number of rounds at the end to consider endgame
 	
 
