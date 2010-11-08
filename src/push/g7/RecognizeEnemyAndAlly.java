@@ -2,9 +2,12 @@ package push.g7;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -21,24 +24,40 @@ public class RecognizeEnemyAndAlly {
 	int[] strongAssistanceScore = new int[6];
 	int[] weakAssistanceScore = new int[6];
 	List<Direction> playerPositions;
+	Map<Direction, Integer> directionToID;
+	
+	// Keep track of scores
+	Scores scores;
+	
+	// Detect illegal moves
+	boolean[] validPlayers = {true, true, true, true, true, true};
+	ArrayList< ArrayList<Move> > allValidMoves = new ArrayList< ArrayList<Move> >();
 	
 	private ScoreZones scoreZones;
 	
 	private static final Logger logger = Logger.getLogger(RecognizeEnemyAndAlly.class);
 	
-	public RecognizeEnemyAndAlly(Direction myCorner, List<Direction> playerPositions, ScoreZones scoreZones) {
-		this(myCorner, playerPositions, scoreZones, null, null);
+	public RecognizeEnemyAndAlly(Direction myCorner, List<Direction> playerPositions,
+			Map<Direction, Integer> directionToID,
+			ScoreZones scoreZones, int[][] initialBoard) {
+		this(myCorner, playerPositions, directionToID, scoreZones, initialBoard, null, null);
 	}
 	
-	public RecognizeEnemyAndAlly(Direction myCorner, List<Direction> playerPositions, ScoreZones scoreZones,
+	public RecognizeEnemyAndAlly(Direction myCorner, List<Direction> playerPositions,
+			Map<Direction, Integer> directionToID,
+			ScoreZones scoreZones, int[][] initialBoard,
 			Collection<Direction> initialAllies, Collection<Direction> initialEnemies) {
 		this.myCorner = myCorner;
 		this.playerPositions = playerPositions;
+		this.directionToID = directionToID;
 		this.scoreZones = scoreZones;
 		if (initialAllies != null)
 			ally.addAll(initialAllies);
 		if (initialEnemies != null)
 			enemy.addAll(initialEnemies);
+		
+		scores = new Scores(validPlayers);
+		scores.updateScores(initialBoard, playerPositions, directionToID);
 	}
 	
 	public void updateAlliances(List<MoveResult> previousMoves) {
@@ -110,8 +129,57 @@ public class RecognizeEnemyAndAlly {
 		}
 	}
 	
-	public boolean isAlly(Direction direction) {
-		return ally.contains(direction);
+	/**
+	 * Get the list of allies, sorted by strongest helper to weakest. (Enemies not included.)
+	 * @return
+	 */
+	public ArrayList<Direction> getAlliesStrongestToWeakest() {
+		ArrayList<Direction> sortedAllies = new ArrayList<Direction>();
+		int[] strongScoreSorted = strongAssistanceScore.clone();
+		
+		// Insert allies, from weakest to strongest. then Reverse.
+		Arrays.sort(strongScoreSorted);
+		for (int scoreRank = 0; scoreRank < strongScoreSorted.length; scoreRank++) {
+			for (int id = 0; id < strongAssistanceScore.length; id++) {
+				// allyif strong assistance > 0
+				if (strongAssistanceScore[id] > 0 && strongAssistanceScore[id] == strongScoreSorted[scoreRank]) {
+					sortedAllies.add(playerPositions.get(id));
+				}
+			}
+		}
+		// Reverse to get the strongest to weakest ordering.
+		Collections.reverse(sortedAllies);
+		return sortedAllies;
+	}
+	
+	/**
+	 * Get the list of enemies, sorted by strongest harmer to weakest.
+	 * @return
+	 */
+	public ArrayList<Direction> getEnemiesStrongestToWeakest() {
+		ArrayList<Direction> sortedEnemies = new ArrayList<Direction>();
+		int[] strongScoreSorted = strongAssistanceScore.clone();
+		
+		// Insert enemies, from weakest to strongest. then Reverse.
+		Arrays.sort(strongScoreSorted);
+		for (int scoreRank = 0; scoreRank < strongScoreSorted.length; scoreRank++) {
+			for (int id = 0; id < strongAssistanceScore.length; id++) {
+				// enemy if strong assistance < 0
+				if (strongAssistanceScore[id] < 0 && strongAssistanceScore[id] == strongScoreSorted[scoreRank]) {
+					sortedEnemies.add(playerPositions.get(id));
+				}
+			}
+		}
+		// Reverse to get the strongest to weakest ordering.
+		Collections.reverse(sortedEnemies);
+		return sortedEnemies;
+	}
+	
+	
+	public void addIllegalPlayers(Collection<Integer> illegalPlayerIds) {
+		for (Integer id : illegalPlayerIds) {
+			validPlayers[id] = false;
+		}
 	}
 	
 }
