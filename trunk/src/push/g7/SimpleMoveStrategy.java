@@ -15,26 +15,33 @@ import push.sim.Player.Direction;
 public class SimpleMoveStrategy {
 
 	private static final Logger logger = Logger.getLogger(SimpleMoveStrategy.class);
-	HashSet<Direction> allys = new HashSet<Direction>();
+	ArrayList<Direction> allys = new ArrayList<Direction>();
 
 
-	public Move generateInitialMove(int[][]board, Direction myCorner,int round)
+	public Move generateInitialMove(int[][]board, Direction myCorner,int round,RecognizeEnemyAndAlly recognize)
 	{
 		logger.info("round: "+ round+"\n");
-		Direction ally = myCorner.getOpposite();
-		if (round <= StaticVariable.FirstStageRound-8)
-			ally = myCorner.getOpposite();
-		else if (round>StaticVariable.FirstStageRound-8 && round <= StaticVariable.FirstStageRound-6)
-			ally = myCorner.getRelative(-1);
-		else if (round>StaticVariable.FirstStageRound-6 && round <= StaticVariable.FirstStageRound-4)
-			ally = myCorner.getRelative(1);
-		else if (round>StaticVariable.FirstStageRound-4 && round <= StaticVariable.FirstStageRound-2)
-			ally = myCorner.getRight();
-		else if (round>StaticVariable.FirstStageRound-2 && round <= StaticVariable.FirstStageRound)
-			ally = myCorner.getLeft();
-		return generalMove(board, myCorner, ally);
-	}
+		if (round <= StaticVariable.TrySteps)
+			allys.add (myCorner.getOpposite());
+		else if (round>StaticVariable.TrySteps && round <= 2*StaticVariable.TrySteps)
+			{
+				if (!recognize.getAlliesStrongestToWeakest().contains(myCorner.getOpposite()))
+				{
+					allys.clear();
+					allys.add(myCorner.getRelative(-1));
+				}
+			}
+		else 
+		{
+			if (!recognize.getAlliesStrongestToWeakest().contains(myCorner.getRelative(-1)))
+			{
+				allys.clear();
+				allys.add(myCorner.getRelative(1));
+			}
+		}
 
+		return generalMove(board, myCorner, allys);
+	}
 	public Move generateHelpfulMove(int[][]board, Direction myCorner,int round, RecognizeEnemyAndAlly recognize) 
 	{
 		logger.info("helpful move. round: "+ round+"\n");
@@ -105,59 +112,39 @@ public class SimpleMoveStrategy {
 		return generalMove(board, myCorner, recognize.playerPositions.get(harmPriority.get(0)));
 	}
 	
-	public Move generalMove(int[][]board, Direction from, Direction to)
+	public Move generalMove(int[][]board, Direction myCorner, ArrayList<Direction> allys)
 	{	
-		int n1,n2;
-		logger.info("ally : " + to);
-		//strong ally. use strong signal.
-		//TODO:only implement part of strong signal 
-		for (Direction i : Direction.values())
-		{
-			n1 = (int)to.getHome().getX()+i.getDx();
-			n2 = (int)to.getHome().getY()+i.getDy();
-			MovePointInDirection a = new MovePointInDirection(n1, n2, board, i.getOpposite(), from);
-			if(a.validStatus == 1 && a.benefitPlayer == to && a.hurtPlayer != from)
-			{
-				logger.info("stong : benefitPlayer is :" + a.benefitPlayer+"\n");
-				return new Move(n1, n2, i.getOpposite());
-			}
-		}
-		//try to help ally without hurting others
-		for(int x=0; x<StaticVariable.MAX_X;x++)
-			for (int y=0; y<StaticVariable.MAX_Y; y++)
-				for (Direction d : Direction.values())
-			{
-					MovePointInDirection m = new MovePointInDirection(x,y, board, d,from);
-					if(m.validStatus == 1 && m.benefitPlayer == to && m.hurtPlayer == null)
-					{
-						logger.info("general : benefitPlayer is :" + m.benefitPlayer+"\n");
-						return new Move (x, y, d);
-					}
-
-			}
-		//if can't help ally without hurting others, hurt others and protect myself.
-		for(int x=0; x<StaticVariable.MAX_X;x++)
-			for (int y=0; y<StaticVariable.MAX_Y; y++)
-				for (Direction d : Direction.values())
-			{
-					MovePointInDirection m = new MovePointInDirection(x,y, board, d,from);
-					if(m.validStatus == 1 && m.benefitPlayer == to && m.hurtPlayer != from)
-					{
-						logger.info("general : benefitPlayer is :" + m.benefitPlayer+"\n");
-						return new Move (x, y, d);
-					}
-
-			}
+		logger.info("ally : " + allys.iterator());
 		
-		// if any point is not 0, return this one with legal direction.
+		//try to help the first ally then the next. 
+		for(Direction i: allys)
+		{
+			GetMostEfficientMove getMove = new GetMostEfficientMove(0, myCorner, i, board);
+			if(getMove.NoValidHelpForThisAlly == 0) { return getMove.mostHelpfulMove;}
+		}
+		
+		//If all the allies is not valid for help,any valid move but not hurt myself.
 		for(int x=0; x<StaticVariable.MAX_X;x++)
 			for (int y=0; y<StaticVariable.MAX_Y; y++)
 				for (Direction d : Direction.values())
 			{
-					MovePointInDirection m = new MovePointInDirection(x,y, board, d,from);
+					MovePointInDirection m = new MovePointInDirection(x,y, board, d,myCorner);
+					if(m.validStatus == 1 &&m.hurtPlayer !=myCorner)
+					{
+//						logger.info("no move for ally.benefitPlayer is :" + m.benefitPlayer+"\n");
+						return new Move (x, y, d);
+					}
+
+			}
+		//any move is valid, return this one
+		for(int x=0; x<StaticVariable.MAX_X;x++)
+			for (int y=0; y<StaticVariable.MAX_Y; y++)
+				for (Direction d : Direction.values())
+			{
+					MovePointInDirection m = new MovePointInDirection(x,y, board, d,myCorner);
 					if(m.validStatus == 1)
 					{
-						logger.info("no move for ally. benefitPlayer is :" + m.benefitPlayer+"\n");
+//						logger.info("no move for ally. benefitPlayer is :" + m.benefitPlayer+"\n");
 						return new Move (x, y, d);
 					}
 
@@ -169,7 +156,3 @@ public class SimpleMoveStrategy {
 	}
 
 }
-
-
-
-
