@@ -36,22 +36,22 @@ public final class GameEngine {
 	HashSet<Integer> losers;
 	static {
 		PropertyConfigurator.configure("logger.properties");
-		System.setOut(new PrintStream(new OutputStream() {
-			
-			@Override
-			public void write(int b) throws IOException {
-				// TODO Auto-generated method stub
-				
-			}
-		}));
-		System.setErr(new PrintStream(new OutputStream() {
-			
-			@Override
-			public void write(int b) throws IOException {
-				// TODO Auto-generated method stub
-				
-			}
-		}));
+//		System.setOut(new PrintStream(new OutputStream() {
+//			
+//			@Override
+//			public void write(int b) throws IOException {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//		}));
+//		System.setErr(new PrintStream(new OutputStream() {
+//			
+//			@Override
+//			public void write(int b) throws IOException {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//		}));
 	}
 	public GameEngine(String configFile) {
 		config = new GameConfig(configFile);
