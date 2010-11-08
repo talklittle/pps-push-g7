@@ -31,6 +31,7 @@ public class PushyPushelkins extends Player{
 		this.previousBoard = this.board;
 		this.board= board;
 	}
+	
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
@@ -70,9 +71,9 @@ public class PushyPushelkins extends Player{
 		allyRecognizer.updateAlliances(previousMoves);
 		
 		// If it is not yet endgame
-		if (round <= StaticVariable.FirstStageRound)
+		if (round <= 3*StaticVariable.TrySteps)
 		{
-			return strategy.generateInitialMove(board, myCorner, round);
+			return strategy.generateInitialMove(board, myCorner, round, allyRecognizer);
 		}
 		else if (round <= totalRounds - StaticVariable.LastStageRound) {
 			return strategy.generateHelpfulMove(board, myCorner, round, allyRecognizer);
