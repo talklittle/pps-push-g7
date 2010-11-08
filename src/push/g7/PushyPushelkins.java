@@ -63,11 +63,11 @@ public class PushyPushelkins extends Player{
 			return strategy.generateInitialMove(board, myCorner, round);
 		}
 		else if (round <= totalRounds - StaticVariable.LastStageRound) {
-			return strategy.generateHelpfulMove(board, myCorner, round);
+			return strategy.generateHelpfulMove(board, myCorner, round, allyRecognizer);
 		}
 		// If it is endgame
 		else {
-			return strategy.generateBetrayalMove(board,myCorner, round);
+			return strategy.generateBetrayalMove(board,myCorner, round, allyRecognizer);
 		}
 	}
 	

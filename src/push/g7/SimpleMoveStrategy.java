@@ -36,6 +36,7 @@ public class SimpleMoveStrategy {
 		// Pick the ally to help
 //		ally = myCorner.getOpposite();
 		
+		for (Direction direction : )
 		recognize.isAlly(direction)
 		
 		
