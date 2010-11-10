@@ -21,8 +21,11 @@ public class RecognizeEnemyAndAlly {
 	HashMap<Direction, ArrayList<Move>> players;
 	ArrayList<Direction> ally = new ArrayList<Direction>();
 	ArrayList<Direction> enemy = new ArrayList<Direction>();
-	int[] strongAssistanceScore = new int[6];
-	int[] weakAssistanceScore = new int[6];
+	
+	// for each player 0 thru 5, keep a list of their assistance moves
+	ArrayList< ArrayList<Integer> > strongAssistanceScores = new ArrayList< ArrayList<Integer> >();
+	ArrayList< ArrayList<Integer> > weakAssistanceScores = new ArrayList< ArrayList<Integer> >();
+	
 	List<Direction> playerPositions;
 	Map<Direction, Integer> directionToID;
 	
@@ -56,6 +59,12 @@ public class RecognizeEnemyAndAlly {
 		if (initialEnemies != null)
 			enemy.addAll(initialEnemies);
 		
+		// init empty assistance history for 6 players
+		for (int i = 0; i < 6; i++) {
+			strongAssistanceScores.add(new ArrayList<Integer>());
+			weakAssistanceScores.add(new ArrayList<Integer>());
+		}
+		
 		scores = new Scores(validPlayers);
 		scores.updateScores(initialBoard, playerPositions, directionToID);
 	}
@@ -64,7 +73,7 @@ public class RecognizeEnemyAndAlly {
 		scores.updateScores(board, playerPositions, directionToID);
 	}
 	
-	public void updateAlliances(List<MoveResult> previousMoves) {
+	public void updateAlliances(List<MoveResult> previousMoves, int[][] previousBoard, int[][] currentBoard) {
 		if (previousMoves == null || previousMoves.size() == 0)
 			return;
 		
@@ -79,58 +88,72 @@ public class RecognizeEnemyAndAlly {
 			}
 			
 			int playerId = result.getPlayerId();
-			Move move = result.getMove();
-			Point oldPoint = new Point(move.getX(), move.getY());
-			Point newPoint = new Point(move.getNewX(), move.getNewY());
-			int oldDistance = GameEngine.getDistance(oldPoint, myCorner.getHome());
-			int newDistance = GameEngine.getDistance(newPoint, myCorner.getHome());
 			
-			// If the distance decreases, then it's a good move (weak assistance)
-			if (newDistance < oldDistance) {
-				weakAssistanceScore[playerId]++;
-			} else if (newDistance > oldDistance) {
-				weakAssistanceScore[playerId]--;
-			}
-			
-//			// If the move is INVALID FOR US, then assume it's a good move (weak assistance)
-//			if (!GameEngine.isValidDirectionForCellAndHome(move.getDirection(), myCorner)) {
-//				weakAssistanceScore[playerId]++;
-//			} else {
-//				weakAssistanceScore[playerId]--;
-//			}
-			logger.info("weakAssistanceScore["+playerId+"]="+weakAssistanceScore[playerId]+" -- "
-					+ move.toString());
-			
-			int multiplierDelta = scoreZones.getMultiplier(newPoint) - scoreZones.getMultiplier(oldPoint);
-			
-			// If the move changed our score, it is a strong assistance (or opposite) indicator
-			if (scoreZones.isPointBelongTo(newPoint, myCorner)) {
-				// If the move shifted stack between 2 of our own points, use multiplierDelta.
-				if (scoreZones.isPointBelongTo(oldPoint, myCorner)) {
-					strongAssistanceScore[playerId] += multiplierDelta;
+			// First update the strongAssistanceScores and weakAssistanceScores
+			if (result.isSuccess()) {
+				Move move = result.getMove();
+				Point oldPoint = new Point(move.getX(), move.getY());
+				Point newPoint = new Point(move.getNewX(), move.getNewY());
+				int oldDistance = GameEngine.getDistance(oldPoint, myCorner.getHome());
+				int newDistance = GameEngine.getDistance(newPoint, myCorner.getHome());
+				
+				// If the distance decreases, then it's a good move (weak assistance)
+				weakAssistanceScores.get(playerId).add(-(newDistance - oldDistance));
+				
+	//			logger.info("weakAssistanceScore["+playerId+"]="+weakAssistanceScore[playerId]+" -- "
+	//					+ move.toString());
+				
+				// Take the number of coins from old space, compare the multiplier from new and old locations.
+				// Ignore the new number of coins, since another player could have simultaneously pushed onto the new.
+				PointProperty oldPointProperty = new PointProperty(move.getX(), move.getY(), previousBoard);
+				PointProperty newPointProperty = new PointProperty(move.getNewX(), move.getNewY(), previousBoard);
+				
+				// If the move changed our score, it is a strong assistance (or opposite) indicator
+				if (scoreZones.isPointBelongTo(newPoint, myCorner)) {
+					// If the move shifted stack between 2 of our own points, use multiplierDelta.
+					if (scoreZones.isPointBelongTo(oldPoint, myCorner)) {
+						strongAssistanceScores.get(playerId).add(
+								oldPointProperty.getCoins() * (newPointProperty.getScore() - oldPointProperty.getScore()));
+					}
+					// If the move shifted stack from external point onto our point, add new multiplier.
+					else {
+						strongAssistanceScores.get(playerId).add(
+								oldPointProperty.getCoins() * scoreZones.getMultiplier(newPoint));
+					}
 				}
-				// If the move shifted stack from external point onto our point, add new multiplier.
-				else {
-					strongAssistanceScore[playerId] += scoreZones.getMultiplier(newPoint);
+				// But if the old point was on our score, then we lost points. Attacking us!
+				else if (scoreZones.isPointBelongTo(oldPoint, myCorner)) {
+					strongAssistanceScores.get(playerId).add(
+							-oldPointProperty.getCoins() * scoreZones.getMultiplier(oldPoint));
 				}
+//				logger.info("strongAssistanceScore["+playerId+"]="+strongAssistanceScore[playerId]+" -- "
+//						+ move.toString());
+			} else {
+				// Unsuccessful move. Don't care!
+				strongAssistanceScores.get(playerId).add(0);
+				weakAssistanceScores.get(playerId).add(0);
 			}
-			// But if the old point was on our score, then we lost points. Attacking us!
-			else if (scoreZones.isPointBelongTo(oldPoint, myCorner)) {
-				strongAssistanceScore[playerId] -= scoreZones.getMultiplier(oldPoint);
-
-			}
-			logger.info("strongAssistanceScore["+playerId+"]="+strongAssistanceScore[playerId]+" -- "
-					+ move.toString());
-
+			
+			double strongWeightedAssistanceScore = calculateWeightedScore(strongAssistanceScores.get(playerId));
+			
 			// Add to appropriate list: ally or enemy
+			// Neutral players are taken care of in getNeutralPlayers()
 			// XXX For now, only uses strongAssistanceScore
-			if (strongAssistanceScore[playerId] > 0) {
+			if (strongWeightedAssistanceScore > 0) {
 				ally.add(playerPositions.get(playerId));
-			} else if (strongAssistanceScore[playerId] < 0) {
+			} else if (strongWeightedAssistanceScore < 0) {
 				enemy.add(playerPositions.get(playerId));
 			}
-			
 		}
+	}
+	
+	public double calculateWeightedScore(ArrayList<Integer> scoresList) {
+		int length = scoresList.size();
+		double score = 0.0;
+		for (int i = 0; i < length; i++) {
+			score += (double) scoresList.get(i) * (double) (i+1) / (double) length;
+		}
+		return score;
 	}
 	
 	/**
@@ -139,19 +162,25 @@ public class RecognizeEnemyAndAlly {
 	 */
 	public ArrayList<Direction> getAlliesStrongestToWeakest() {
 		ArrayList<Direction> sortedAllies = new ArrayList<Direction>();
-		int[] strongScoreSorted = strongAssistanceScore.clone();
 		
-		// Insert allies, from weakest to strongest. then Reverse.
-		Arrays.sort(strongScoreSorted);
-		for (int scoreRank = 0; scoreRank < strongScoreSorted.length; scoreRank++) {
-			for (int id = 0; id < strongAssistanceScore.length; id++) {
+		// Insert allies, from weakest to strongest.
+		double[] scores = new double[strongAssistanceScores.size()];
+		double[] scoresSorted  = new double[strongAssistanceScores.size()];
+		for (int i = 0; i < scores.length; i++) {
+			scores[i] = calculateWeightedScore(strongAssistanceScores.get(i));
+			scoresSorted[i] = scores[i];
+		}
+		Arrays.sort(scoresSorted);
+		
+		for (int scoreRank = 0; scoreRank < scoresSorted.length; scoreRank++) {
+			for (int id = 0; id < scores.length; id++) {
 				// allyif strong assistance > 0
-				if (strongAssistanceScore[id] > 0 && strongAssistanceScore[id] == strongScoreSorted[scoreRank]) {
+				if (scores[id] > 0 && scores[id] == scoresSorted[scoreRank]) {
 					sortedAllies.add(playerPositions.get(id));
 				}
 			}
 		}
-		// Reverse to get the strongest to weakest ordering.
+		// Reverse to get the strongest to weakest allies (positive numbers descending).
 		Collections.reverse(sortedAllies);
 		return sortedAllies;
 	}
@@ -162,27 +191,32 @@ public class RecognizeEnemyAndAlly {
 	 */
 	public ArrayList<Direction> getEnemiesStrongestToWeakest() {
 		ArrayList<Direction> sortedEnemies = new ArrayList<Direction>();
-		int[] strongScoreSorted = strongAssistanceScore.clone();
 		
-		// Insert enemies, from weakest to strongest. then Reverse.
-		Arrays.sort(strongScoreSorted);
-		for (int scoreRank = 0; scoreRank < strongScoreSorted.length; scoreRank++) {
-			for (int id = 0; id < strongAssistanceScore.length; id++) {
-				// enemy if strong assistance < 0
-				if (strongAssistanceScore[id] < 0 && strongAssistanceScore[id] == strongScoreSorted[scoreRank]) {
+		// Insert opponents from greatest harmers, weak harmers, weak helpers, strong helpers
+		double[] scores = new double[strongAssistanceScores.size()];
+		double[] scoresSorted  = new double[strongAssistanceScores.size()];
+		for (int i = 0; i < scores.length; i++) {
+			scores[i] = calculateWeightedScore(strongAssistanceScores.get(i));
+			scoresSorted[i] = scores[i];
+		}
+		Arrays.sort(scoresSorted);
+		
+		for (int scoreRank = 0; scoreRank < scoresSorted.length; scoreRank++) {
+			for (int id = 0; id < scores.length; id++) {
+				// allyif strong assistance > 0
+				if (scores[id] < 0 && scores[id] == scoresSorted[scoreRank]) {
 					sortedEnemies.add(playerPositions.get(id));
 				}
 			}
 		}
-		// Reverse to get the strongest to weakest ordering.
-		Collections.reverse(sortedEnemies);
+		// Already sorted strongest to weakest (most negative to least negative)
 		return sortedEnemies;
 	}
 	
 	public ArrayList<Direction> getNeutralPlayers() {
 		ArrayList<Direction> neutralPlayers = new ArrayList<Direction>();
-		for (int id = 0; id < strongAssistanceScore.length; id++) {
-			if (strongAssistanceScore[id] == 0) {
+		for (int id = 0; id < strongAssistanceScores.size(); id++) {
+			if (calculateWeightedScore(strongAssistanceScores.get(id)) == 0) {
 				neutralPlayers.add(playerPositions.get(id));
 			}
 		}
