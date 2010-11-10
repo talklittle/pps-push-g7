@@ -98,7 +98,7 @@ public class SimpleMoveStrategy {
 		logger.info("ally : " + allys.iterator());
 		// in first 6 rounds, try to set up two allies with help them
 		// alternatively.
-		if (round <= 2 * StaticVariable.TrySteps) {
+		if (round < 2 * StaticVariable.TrySteps) {
 			allysOrEnemy.clear();
 			allysOrEnemy.add(myCorner.getRelative(0));
 			allysOrEnemy.add(myCorner.getRelative(1));

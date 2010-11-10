@@ -64,7 +64,7 @@ public class PushyPushelkins extends Player{
 	@Override
 	public void startNewGame(int id, int m,
 			ArrayList<Direction> playerPositions) {
-		this.round = 0;
+		this.round = -1;
 		this.myCorner=playerPositions.get(id);
 		this.id=id;
 		this.playerPositions = playerPositions;
