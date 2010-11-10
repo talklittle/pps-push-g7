@@ -1,5 +1,6 @@
 package push.g7;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ public class PushyPushelkins extends Player{
 	ScoreZones scoreZones;
 	SimpleMoveStrategy strategy = new SimpleMoveStrategy();
 	int Piles;
+	int haveCoins;
 	
 	
 	private static final Logger logger = Logger.getLogger(PushyPushelkins.class);	
@@ -34,6 +36,7 @@ public class PushyPushelkins extends Player{
 		this.previousBoard = this.board;
 		this.board= board;
 		this.Piles=0;
+		this.haveCoins=0;
 		for (int x = 0; x < StaticVariable.MAX_X; x++)
 			for (int y = 0; y < StaticVariable.MAX_Y; y++)
 			{
@@ -44,6 +47,11 @@ public class PushyPushelkins extends Player{
 					}
 
 				}
+		for(int y=0;y<StaticVariable.MAX_Y;y++)
+			for(int x=0; x<StaticVariable.MAX_X;x++)
+			{
+				if(scoreZones.isPointBelongTo(new Point(x,y), myCorner)) haveCoins++;
+			}
 	}
 	
 	@Override
@@ -90,9 +98,10 @@ public class PushyPushelkins extends Player{
 		allyRecognizer.addIllegalPlayers(illegalMoveChecker.getIllegalPlayerIds(previousBoard, previousMoves));
 		allyRecognizer.updateScores(board, playerPositions, directionToID);
 		allyRecognizer.updateAlliances(previousMoves);
+
 		
 		// If it is endgame
-		if(round == totalRounds){
+		if(round == totalRounds || haveCoins==0){
 			return strategy.generateBetrayalMove(board,myCorner, round, allyRecognizer);
 		}
 		else
