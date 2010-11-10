@@ -97,7 +97,7 @@ public class PushyPushelkins extends Player{
 		
 		allyRecognizer.addIllegalPlayers(illegalMoveChecker.getIllegalPlayerIds(previousBoard, previousMoves));
 		allyRecognizer.updateScores(board, playerPositions, directionToID);
-		allyRecognizer.updateAlliances(previousMoves);
+		allyRecognizer.updateAlliances(previousMoves, previousBoard, board);
 
 		
 		// If it is endgame
