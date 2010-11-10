@@ -25,6 +25,7 @@ public class RecognizeEnemyAndAlly {
 	// for each player 0 thru 5, keep a list of their assistance moves
 	ArrayList< ArrayList<Integer> > strongAssistanceScores = new ArrayList< ArrayList<Integer> >();
 	ArrayList< ArrayList<Integer> > weakAssistanceScores = new ArrayList< ArrayList<Integer> >();
+	ArrayList< ArrayList<Integer> > iHelpedHurtStrongly = new ArrayList< ArrayList<Integer> >();
 	
 	List<Direction> playerPositions;
 	Map<Direction, Integer> directionToID;
@@ -63,6 +64,7 @@ public class RecognizeEnemyAndAlly {
 		for (int i = 0; i < 6; i++) {
 			strongAssistanceScores.add(new ArrayList<Integer>());
 			weakAssistanceScores.add(new ArrayList<Integer>());
+			iHelpedHurtStrongly.add(new ArrayList<Integer>());
 		}
 		
 		scores = new Scores(validPlayers);
@@ -80,9 +82,12 @@ public class RecognizeEnemyAndAlly {
 		ally.clear();
 		enemy.clear();
 		
+		MoveResult iAffectOthersResult = null;
+		
 		for (MoveResult result : previousMoves) {
-			// Skip myself
+			// Skip myself. will handle myself helping others in next big loop block
 			if (myCorner.equals(playerPositions.get(result.getPlayerId()))) {
+				iAffectOthersResult = result;
 				logger.debug("updateAlliances: skip myself id="+result.getPlayerId());
 				continue;
 			}
@@ -133,16 +138,76 @@ public class RecognizeEnemyAndAlly {
 				strongAssistanceScores.get(playerId).add(0);
 				weakAssistanceScores.get(playerId).add(0);
 			}
+		}
+
+		//
+		// Check how I help/hurt others
+		//
+		
+		for (int otherPlayerId = 0; otherPlayerId < playerPositions.size(); otherPlayerId++) {
+			Direction otherPlayer = playerPositions.get(otherPlayerId);
+			if (otherPlayer.equals(myCorner))
+				continue;
 			
+			// iAffectOthersResult should never be null
+			if (iAffectOthersResult != null && iAffectOthersResult.isSuccess()) {
+				Move move = iAffectOthersResult.getMove();
+				Point oldPoint = new Point(move.getX(), move.getY());
+				Point newPoint = new Point(move.getNewX(), move.getNewY());
+				int oldDistance = GameEngine.getDistance(oldPoint, otherPlayer.getHome());
+				int newDistance = GameEngine.getDistance(newPoint, otherPlayer.getHome());
+				
+				// Take the number of coins from old space, compare the multiplier from new and old locations.
+				// Ignore the new number of coins, since another player could have simultaneously pushed onto the new.
+				PointProperty oldPointProperty = new PointProperty(move.getX(), move.getY(), previousBoard);
+				PointProperty newPointProperty = new PointProperty(move.getNewX(), move.getNewY(), previousBoard);
+				
+				// If the move changed our score, it is a strong assistance (or opposite) indicator
+				if (scoreZones.isPointBelongTo(newPoint, otherPlayer)) {
+					// If the move shifted stack between 2 of our own points, use multiplierDelta.
+					if (scoreZones.isPointBelongTo(oldPoint, otherPlayer)) {
+						iHelpedHurtStrongly.get(otherPlayerId).add(
+								oldPointProperty.getCoins() * (newPointProperty.getScore() - oldPointProperty.getScore()));
+					}
+					// If the move shifted stack from external point onto our point, add new multiplier.
+					else {
+						iHelpedHurtStrongly.get(otherPlayerId).add(
+								oldPointProperty.getCoins() * scoreZones.getMultiplier(newPoint));
+					}
+				}
+				// But if the old point was on our score, then we lost points. Attacking us!
+				else if (scoreZones.isPointBelongTo(oldPoint, otherPlayer)) {
+					iHelpedHurtStrongly.get(otherPlayerId).add(
+							-oldPointProperty.getCoins() * scoreZones.getMultiplier(oldPoint));
+				}
+//				logger.info("strongAssistanceScore["+playerId+"]="+strongAssistanceScore[playerId]+" -- "
+//						+ move.toString());
+			} else {
+				// Unsuccessful move. Don't care!
+				iHelpedHurtStrongly.get(otherPlayerId).add(0);
+			}
+		}
+		
+		//
+		// Finally we can calculate how much they helped me vs. how much I helped them
+		// Then we can decide ally/neutral/enemy based on that!
+		//
+		for (int playerId = 0; playerId < playerPositions.size(); playerId++) {
 			double strongWeightedAssistanceScore = calculateWeightedScore(strongAssistanceScores.get(playerId));
+			double iHelpedThemScore = calculateWeightedScore(iHelpedHurtStrongly.get(playerId));
 			
+			//
 			// Add to appropriate list: ally or enemy
 			// Neutral players are taken care of in getNeutralPlayers()
-			// XXX For now, only uses strongAssistanceScore
-			if (strongWeightedAssistanceScore > 0) {
-				ally.add(playerPositions.get(playerId));
-			} else if (strongWeightedAssistanceScore < 0) {
+			//
+			
+			// Enemies are anyone who has hurt me
+			if (strongWeightedAssistanceScore < 0) {
 				enemy.add(playerPositions.get(playerId));
+			}
+			// Ally with anyone who has helped me, with score >= (5 points less than how much I helped them)
+			else if (strongWeightedAssistanceScore > 0 && strongWeightedAssistanceScore >= iHelpedThemScore - 5.0) {
+				ally.add(playerPositions.get(playerId));
 			}
 		}
 	}
