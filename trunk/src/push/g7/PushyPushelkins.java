@@ -56,8 +56,7 @@ public class PushyPushelkins extends Player{
 	
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return "g7.PushyPushelkins";
+		return "PushyPushelkins";
 	}
 	Direction myCorner;
 	int id;
@@ -98,7 +97,6 @@ public class PushyPushelkins extends Player{
 		allyRecognizer.addIllegalPlayers(illegalMoveChecker.getIllegalPlayerIds(previousBoard, previousMoves));
 		allyRecognizer.updateScores(board, playerPositions, directionToID);
 		allyRecognizer.updateAlliances(previousMoves, previousBoard, board);
-
 		
 		// If it is endgame
 		if(round == totalRounds || haveCoins==0){
