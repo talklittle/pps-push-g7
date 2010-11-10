@@ -4,7 +4,7 @@
 <properties>
 	<comment>A sample configuration file.</comment>
 	
-	<entry key="push.classes">push.g0.DumbPlayer0 push.g0.DumbPlayer1 push.g7.PushyPushelkins</entry>
+	<entry key="push.classes">push.g0.DumbPlayer0 push.g0.DumbPlayer1 push.g1.Scholar push.g2.G2Player push.g3.ShovePlayer push.g4.G4Player push.g5.g5player push.g6.NicePlayer push.g7.PushyPushelkins</entry>
 
   <!--	<entry key ="push.seed">102223023</entry>-->
 	
