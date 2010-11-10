@@ -111,7 +111,7 @@ public class PushyPushelkins extends Player{
 		}
 		// where piles lesser than 6, try to make allies with 3 players.
 		else {
-			return strategy.threeAllisMove(board, myCorner, round, allyRecognizer);
+			return strategy.threeAlliesMove(board, myCorner, round);
 		}
 		}
 	}
