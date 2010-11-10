@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import push.sim.Move;
 import push.sim.MoveResult;
 import push.sim.Player;
+import push.sim.Player.Direction;
 
 public class PushyPushelkins extends Player{
 	int[][] board = new int[StaticVariable.MAX_Y][StaticVariable.MAX_X];
@@ -22,6 +23,7 @@ public class PushyPushelkins extends Player{
 	int totalRounds;
 	ScoreZones scoreZones;
 	SimpleMoveStrategy strategy = new SimpleMoveStrategy();
+	int Piles;
 	
 	
 	private static final Logger logger = Logger.getLogger(PushyPushelkins.class);	
@@ -31,6 +33,17 @@ public class PushyPushelkins extends Player{
 	public void updateBoardState(int[][] board) {
 		this.previousBoard = this.board;
 		this.board= board;
+		this.Piles=0;
+		for (int x = 0; x < StaticVariable.MAX_X; x++)
+			for (int y = 0; y < StaticVariable.MAX_Y; y++)
+			{
+					PointProperty p = new PointProperty(x, y,board);
+					if (p.status == 1 && p.coins >= 2) 
+					{
+						this.Piles++;
+					}
+
+				}
 	}
 	
 	@Override
@@ -56,6 +69,7 @@ public class PushyPushelkins extends Player{
 				this.board[y][x]=1;
 			}
 		this.previousBoard=this.board;
+		this.Piles=61;
 		
 		for (int i = 0; i < playerPositions.size(); i++) {
 			directionToID.put(playerPositions.get(i), i);
@@ -77,17 +91,19 @@ public class PushyPushelkins extends Player{
 		allyRecognizer.updateScores(board, playerPositions, directionToID);
 		allyRecognizer.updateAlliances(previousMoves);
 		
-		// If it is not yet endgame
-		if (round <= 3*StaticVariable.TrySteps)
-		{
-			return strategy.generateInitialMove(board, myCorner, round, allyRecognizer);
+		// If it is endgame
+		if(round == totalRounds){
+			return strategy.generateBetrayalMove(board,myCorner, round, allyRecognizer);
 		}
-		else if (round <= totalRounds - StaticVariable.LastStageRound) {
+		else
+		{
+		if (Piles > 6) {
 			return strategy.generateHelpfulMove(board, myCorner, round, allyRecognizer);
 		}
-		// If it is endgame
+		// where piles lesser than 6, try to make allies with 3 players.
 		else {
-			return strategy.generateBetrayalMove(board,myCorner, round, allyRecognizer);
+			return strategy.threeAllisMove(board, myCorner, round, allyRecognizer);
+		}
 		}
 	}
 }
