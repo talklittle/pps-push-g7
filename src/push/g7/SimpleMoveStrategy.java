@@ -90,7 +90,34 @@ public class SimpleMoveStrategy {
 		// supply a list of "to" Directions
 		return generalMove(1, round, board, myCorner, harmPriorityDirections);
 	}
-
+	
+	public Move helpOurselfMove(int[][]board,Direction myCorner,int round,int totalRounds,int formerScore, int afterScore)
+	{
+		//last 3 round try the best to help ourself
+		if(round>=totalRounds-3)
+		{
+			ArrayList<Direction> allys=new ArrayList<Direction>();
+			allys.add(myCorner);		
+			return generalMove(0,round,board,myCorner,allys);
+		}
+		else if(formerScore>afterScore)
+		{
+			for(int y=0;y<StaticVariable.MAX_Y;y++)
+				for(int x=0;x<StaticVariable.MAX_X;x++)
+					for (Direction d : Direction.values()) 
+					{
+						MovePointInDirection m = new MovePointInDirection(x, y,
+								board, d, myCorner);
+						PointProperty p = new PointProperty(x,y,board);
+						if(m.validStatus==1 && m.benefitPlayer==myCorner&&p.home!=myCorner)
+						{
+							return new Move(x,y,d);
+						}
+					
+					}
+		}
+		return null;
+	}
 
 
 	public Move generalMove(int status, int round, int[][] board,
