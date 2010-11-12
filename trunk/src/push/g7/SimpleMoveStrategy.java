@@ -91,14 +91,20 @@ public class SimpleMoveStrategy {
 		return generalMove(1, round, board, myCorner, harmPriorityDirections);
 	}
 	
-	public Move helpOurselfMove(int[][]board,Direction myCorner,int round,int totalRounds,int formerScore, int afterScore)
+	public Move helpOurselfMove(int[][]board,Direction myCorner,int round,int totalRounds,int formerScore, int afterScore,RecognizeEnemyAndAlly recognize)
 	{
 		//last 3 round try the best to help ourself
 		if(round>=totalRounds-3)
 		{
 			ArrayList<Direction> allys=new ArrayList<Direction>();
-			allys.add(myCorner);		
-			return generalMove(0,round,board,myCorner,allys);
+			allys.add(myCorner);
+			allys.addAll(recognize.getAlliesStrongestToWeakest());
+			allys.addAll(recognize.getNeutralPlayers());
+			ArrayList<Direction> a =recognize.getEnemiesStrongestToWeakest();
+			Collections.reverse(a);
+			allys.addAll(a);
+
+			return singleAllyMove(board,myCorner,allys);
 		}
 		else if(formerScore>afterScore)
 		{
@@ -209,7 +215,7 @@ public class SimpleMoveStrategy {
 		ArrayList<Direction> allys = new ArrayList<Direction>();
 		allys.add(allysOrEnemy.get(0));
 		allys.add(allysOrEnemy.get(1));
-		allys.add(allysOrEnemy.get(1));
+		allys.add(allysOrEnemy.get(2));
 		for (Direction i : allys) {
 			GetMostEfficientMove getMove = new GetMostEfficientMove(0,myCorner, i, board);
 			if (getMove.NoValidHelpForThisAlly == 0 && rand.nextInt(4)!=3) {
