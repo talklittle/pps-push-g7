@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import push.sim.Move;
 import push.sim.MoveResult;
 import push.sim.Player;
-import push.sim.Player.Direction;
 
 public class PushyPushelkins extends Player {
 	int[][] board = new int[StaticVariable.MAX_Y][StaticVariable.MAX_X];
@@ -93,35 +92,52 @@ public class PushyPushelkins extends Player {
 
 	@Override
 	public Move makeMove(List<MoveResult> previousMoves) {
-		// (first round is Round 1)
+		// (first round is Round 0)
 		round++;
+		
+		// if game is 10 rounds or less, clear the history every round
+		if (totalRounds <= 10) {
+			this.allyRecognizer = new RecognizeEnemyAndAlly(myCorner, playerPositions, directionToID,
+					scoreZones, board, null, null);
+		}
+		
 		logger.info("pile="+Piles);
 		allyRecognizer.addIllegalPlayers(illegalMoveChecker
 				.getIllegalPlayerIds(previousBoard, previousMoves));
 		allyRecognizer.updateScores(board, playerPositions, directionToID);
 		allyRecognizer.updateAlliances(previousMoves, previousBoard, board);
-
+		
 		// If it is endgame
+		// Same for general game and short game(10 round)
 		if (round == totalRounds - 1) {
 			logger.info("round:"+round);
 			logger.info("totalRounds:"+totalRounds);
 			Move a = strategy.helpOurselfMove(board, myCorner, round,
-					totalRounds, formerScore, afterScore,allyRecognizer);
+					totalRounds, formerScore, afterScore,allyRecognizer, false);
 			if (a != null) {
 				return a;
 			} else {
 				return strategy.generateBetrayalMove(board, myCorner, round,
-						allyRecognizer);
+						allyRecognizer, false);
 			}
-		} else {
+		}
+		// short game
+		else if (totalRounds <= 10) {
+			return strategy.generateShortGameMove(board, myCorner, round, totalRounds, allyRecognizer,
+					previousMoves, formerScore, afterScore);
+		}
+
+
+		// general game
+		else {
 			if (Piles > 6) {
 				return strategy.generateHelpfulMove(board, myCorner, round,
-						allyRecognizer);
+						allyRecognizer, false);
 			}
 			// where piles lesser than 6, try to make allies with 3 players.
 			else {
 				Move m = strategy.helpOurselfMove(board, myCorner, round,
-						totalRounds, formerScore, afterScore, allyRecognizer);
+						totalRounds, formerScore, afterScore, allyRecognizer, false);
 				if (m != null) {
 					return m;
 				} else {
