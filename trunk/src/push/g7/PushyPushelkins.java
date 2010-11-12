@@ -26,6 +26,8 @@ public class PushyPushelkins extends Player{
 	SimpleMoveStrategy strategy = new SimpleMoveStrategy();
 	int Piles;
 	int haveCoins;
+	int formerScore;
+	int afterScore;
 	
 	
 	private static final Logger logger = Logger.getLogger(PushyPushelkins.class);	
@@ -37,21 +39,23 @@ public class PushyPushelkins extends Player{
 		this.board= board;
 		this.Piles=0;
 		this.haveCoins=0;
+		this.formerScore=this.afterScore;
 		for (int x = 0; x < StaticVariable.MAX_X; x++)
 			for (int y = 0; y < StaticVariable.MAX_Y; y++)
 			{
-					PointProperty p = new PointProperty(x, y,board);
+				if(scoreZones.isPointBelongTo(new Point(x,y), myCorner)) haveCoins++;	
+				PointProperty p = new PointProperty(x, y,board);
 					if (p.status == 1 && p.coins >= 2) 
 					{
 						this.Piles++;
 					}
+					if(p.status ==1&& p.home==myCorner)
+					{
+						afterScore=p.score*p.coins;
+					}
 
 				}
-		for(int y=0;y<StaticVariable.MAX_Y;y++)
-			for(int x=0; x<StaticVariable.MAX_X;x++)
-			{
-				if(scoreZones.isPointBelongTo(new Point(x,y), myCorner)) haveCoins++;
-			}
+		
 	}
 	
 	@Override
@@ -77,6 +81,7 @@ public class PushyPushelkins extends Player{
 			}
 		this.previousBoard=this.board;
 		this.Piles=61;
+		this.formerScore=this.afterScore=16;
 		
 		for (int i = 0; i < playerPositions.size(); i++) {
 			directionToID.put(playerPositions.get(i), i);
@@ -99,8 +104,15 @@ public class PushyPushelkins extends Player{
 		allyRecognizer.updateAlliances(previousMoves, previousBoard, board);
 		
 		// If it is endgame
-		if(round == totalRounds || haveCoins==0){
-			return strategy.generateBetrayalMove(board,myCorner, round, allyRecognizer);
+		if(round == totalRounds-1){
+			Move a = strategy.helpOurselfMove(board,myCorner,round,totalRounds, formerScore, afterScore);
+			if(a!=null)
+			{
+				return a;
+			}else
+				{
+				return strategy.generateBetrayalMove(board,myCorner, round, allyRecognizer);
+				}
 		}
 		else
 		{
@@ -108,8 +120,17 @@ public class PushyPushelkins extends Player{
 			return strategy.generateHelpfulMove(board, myCorner, round, allyRecognizer);
 		}
 		// where piles lesser than 6, try to make allies with 3 players.
-		else {
-			return strategy.threeAlliesMove(board, myCorner, round);
+		else
+		{
+			Move m = strategy.helpOurselfMove(board,myCorner,round,totalRounds, formerScore, afterScore);
+				if(m!=null)
+				{
+					return m;
+				}else
+				{
+					return strategy.threeAlliesMove(board, myCorner, round);
+				}
+					
 		}
 		}
 	}
